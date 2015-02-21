@@ -17,8 +17,8 @@
 #import "JSONKeyMapper.h"
 
 @interface JSONKeyMapper()
-@property (nonatomic, strong) NSMutableDictionary *toModelMap;
-@property (nonatomic, strong) NSMutableDictionary *toJSONMap;
+@property (nonatomic, strong) NSCache *toModelMap;
+@property (nonatomic, strong) NSCache *toJSONMap;
 @end
 
 @implementation JSONKeyMapper
@@ -28,8 +28,8 @@
     self = [super init];
     if (self) {
         //initialization
-        self.toModelMap = [NSMutableDictionary dictionary];
-        self.toJSONMap  = [NSMutableDictionary dictionary];
+        self.toModelMap = [NSCache new];
+        self.toJSONMap  = [NSCache new];
     }
     return self;
 }
@@ -45,22 +45,24 @@
         _JSONToModelKeyBlock = ^NSString*(NSString* keyName) {
 
             //try to return cached transformed key
-            if (myself.toModelMap[keyName]) return myself.toModelMap[keyName];
+            if ([myself.toModelMap objectForKey:keyName])
+                return [myself.toModelMap objectForKey:keyName];
             
             //try to convert the key, and store in the cache
             NSString* result = toModel(keyName);
-            myself.toModelMap[keyName] = result;
+            [myself.toModelMap setObject:result forKey:keyName];
             return result;
         };
         
         _modelToJSONKeyBlock = ^NSString*(NSString* keyName) {
             
             //try to return cached transformed key
-            if (myself.toJSONMap[keyName]) return myself.toJSONMap[keyName];
+            if ([myself.toJSONMap objectForKey:keyName])
+                return [myself.toJSONMap objectForKey:keyName];
             
             //try to convert the key, and store in the cache
             NSString* result = toJSON(keyName);
-            myself.toJSONMap[keyName] = result;
+            [myself.toJSONMap setObject:result forKey:keyName];
             return result;
             
         };
